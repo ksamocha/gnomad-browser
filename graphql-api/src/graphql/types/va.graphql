@@ -1,0 +1,257 @@
+type VANumber {
+  type: String!
+  value: Int!
+}
+
+type VADefiniteRange {
+  type: String!
+  min: Float!
+  max: Float!
+}
+
+enum VAComparator {
+  LTE
+  GTE
+}
+
+type VAIndefiniteRange {
+  type: String!
+  value: Float!
+  comparator: VAComparator!
+}
+
+union VANumberlike = VADefiniteRange | VAIndefiniteRange | VANumber
+
+type VASequenceInterval {
+  type: String!
+  start: VANumberlike!
+  end: VANumberlike!
+}
+
+type VASimpleInterval {
+  type: String!
+  start: Int!
+  end: Int!
+}
+
+type VACytobandInterval {
+  type: String!
+  start: String!
+  end: String!
+}
+
+type VALiteralSequenceExpression {
+  type: String!
+  id: String!
+  sequence: String!
+}
+
+type VASequenceLocation {
+  _id: VACURIE
+  type: String!
+  sequence_id: String!
+  interval: VANumberlike!
+}
+
+type VADerivedSequenceExpression {
+  type: String!
+  location: VASequenceLocation!
+  reverse_complement: Boolean!
+}
+
+union VASingleSequenceExpression = VADerivedSequenceExpression | VALiteralSequenceExpression
+
+type VARepeatedSequenceExpression {
+  type: String!
+  seq_expr: VASingleSequenceExpression!
+  count: VANumberlike!
+}
+
+type VAChromosomeLocation {
+  _id: VACURIE
+  type: String!
+  species_id: String!
+  chr: String!
+  interval: VACytobandInterval!
+}
+
+union VALocation = VAChromosomeLocation | VASequenceLocation
+
+type VACURIE {
+  value: String!
+}
+
+union VAUncomposedSequenceExpression =
+    VADerivedSequenceExpression
+  | VALiteralSequenceExpression
+  | VARepeatedSequenceExpression
+
+type VAComposedSequenceExpression {
+  type: String!
+  components: [VAUncomposedSequenceExpression!]!
+}
+
+type VASequenceState {
+  type: String!
+  sequence: String!
+}
+
+union VAAlleleLocation = VACURIE | VAChromosomeLocation | VASequenceLocation
+
+union VAAlleleState =
+    VAComposedSequenceExpression
+  | VADerivedSequenceExpression
+  | VALiteralSequenceExpression
+  | VARepeatedSequenceExpression
+  | VASequenceState
+
+type VAAllele {
+  _id: VACURIE
+  type: String!
+  location: VAAlleleLocation!
+  state: VAAlleleState!
+}
+
+type VAGene {
+  type: String!
+  gene_id: VACURIE!
+}
+
+union VACopyNumberSubject = VACURIE | VAChromosomeLocation | VAGene | VASequenceLocation
+
+type VACopyNumberChange {
+  _id: VACURIE
+  type: String!
+  subject: VACopyNumberSubject!
+  copy_change: String!
+}
+
+type VACopyNumberCount {
+  _id: VACURIE
+  type: String!
+  subject: VACopyNumberSubject!
+  copies: VANumberlike!
+}
+
+union VAHaplotypeMember = VAAllele | VACURIE
+
+type VAHaplotype {
+  _id: VACURIE
+  type: String!
+  members: [VAHaplotypeMember!]!
+}
+
+union VAGenotypeMemberVariation = VAAllele | VAHaplotype
+
+type VAGenotypeMember {
+  type: String!
+  count: VANumberlike!
+  variation: VAGenotypeMemberVariation!
+}
+
+type VAGenotype {
+  _id: VACURIE
+  type: String!
+  members: [VAGenotypeMember!]!
+  count: VANumberlike!
+}
+
+type VAText {
+  _id: VACURIE
+  type: String!
+  definition: String!
+}
+
+union VAVariationSetMember =
+    VAAllele
+  | VACURIE
+  | VACopyNumberChange
+  | VACopyNumberCount
+  | VAGenotype
+  | VAText
+  | VAVariationSet
+
+type VAVariationSet {
+  _id: VACURIE
+  type: String!
+  members: [VAVariationSetMember!]!
+}
+
+union VAVariation =
+    VAAllele
+  | VACopyNumberChange
+  | VACopyNumberCount
+  | VAGenotype
+  | VAHaplotype
+  | VAText
+  | VAVariationSet
+
+union VAMolecularVariation = VAAllele | VAHaplotype
+
+union VAUtilityVariation = VAText | VAVariationSet
+
+union VASystematicVariation = VACopyNumberChange | VACopyNumberCount | VAGenotype
+
+union VASequenceExpression =
+    VAComposedSequenceExpression
+  | VADerivedSequenceExpression
+  | VALiteralSequenceExpression
+  | VARepeatedSequenceExpression
+
+union VAFeature = VAGene
+
+type VASimpleInterval {
+  type: String!
+  start: Int!
+  end: Int!
+}
+
+type VACohortAlleleFrequencyDerivation {
+  id: String
+  type: String
+  label: String
+  version: String
+}
+
+type VAFocusAlleleURI {
+  value: String!
+}
+
+union VAFocusAllele = VAAllele | VAFocusAlleleURI
+
+type VACohortCharacteristic {
+  name: String!
+  value: String!
+}
+
+type VACohort {
+  id: String!
+  label: String
+  characteristics: [VACohortCharacteristic!]
+}
+
+type VAPopmaxFAF95 {
+  frequency: Float!
+  confidenceInterval: Float!
+  popFreqId: String!
+}
+
+type VAAncillaryResults {
+  popMaxFAF95: VAPopmaxFAF95
+  homozygotes: Int
+  meanDepth: Float
+}
+
+type VACohortAlleleFrequency {
+  id: String!
+  type: String!
+  label: String
+  derivedFrom: VACohortAlleleFrequencyDerivation
+  focusAllele: VAFocusAllele!
+  focusAlleleCount: Int!
+  locusAlleleCount: Int!
+  alleleFrequency: Float!
+  cohort: VACohort!
+  ancillaryResults: VAAncillaryResults
+  subcohortFrequency: [VACohortAlleleFrequency!]
+}
