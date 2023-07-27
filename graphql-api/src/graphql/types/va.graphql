@@ -177,7 +177,7 @@ type VAVariationSet {
   members: [VAVariationSetMember!]!
 }
 
-union VAVariation =
+union VRSVariation =
     VAAllele
   | VACopyNumberChange
   | VACopyNumberCount
@@ -253,5 +253,10 @@ type VACohortAlleleFrequency {
   alleleFrequency: Float!
   cohort: VACohort!
   ancillaryResults: VAAncillaryResults
-  subcohortFrequency: [VACohortAlleleFrequency!]
+  parentCohortId: String
+}
+
+type VA {
+  va: [VACohortAlleleFrequency!]
+  vrs: VRSVariation!
 }
